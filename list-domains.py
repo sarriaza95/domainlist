@@ -1,5 +1,8 @@
 from pip._vendor import requests
 import json
+import csv
+from operator import itemgetter
+import pandas as pd
 
 headers = {
     'Authorization': 'whm root:9VDQH22VRU23AMHM8A8F5I2UVVFBLO69',
@@ -14,21 +17,20 @@ params = {
 
 response = requests.get('https://io.topfloormarketing.net:2087/json-api/listaccts', params=params, headers=headers)
 print(response)
-response_dict = json.loads(response.text)
+with open('data.json', 'w', encoding='utf-8') as f:
+    json.dump(response.json(), f)
+response_dict = response.json()
 for i in response_dict:
     print("key: ", i, "val: ", response_dict[i])
 
-# create a blank Workbook object
-workbook = Workbook()
-# access default empty worksheet
-worksheet = workbook.getWorksheets().get(0)
+with open('data.json') as json_file:
+    data = json.load(json_file)
+    print ("type", type(data['data']))
+    
+    print("\nPeople1:", data['metadata'])
+    print("\nPeople2:", data['data']['acct'])
 
-# set JsonLayoutOptions for formatting
-layoutOptions = JsonLayoutOptions()
-layoutOptions.setArrayAsTable(True)
 
-# import JSON data to default worksheet starting at cell A1
-JsonUtility.importData(response_dict, worksheet.getCells(), 0, 0, layoutOptions)
-
-# save resultant file in JSON-TO-XLS format
-workbook.save("output.xls", SaveFormat.AUTO)
+    df = pd.DataFrame(data=data['data']['acct'])
+    df.to_excel("students.xlsx", index=False)
+print("Dictionary converted into excel...")
